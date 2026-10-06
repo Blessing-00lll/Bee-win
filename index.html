@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bee Win</title>
+<style>
+body{margin:0;background:#f5f7f6;font-family:Arial,sans-serif;color:#111}.app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
+header{background:#121614;color:#fff;padding:20px}.brand{font-size:28px;font-weight:900}.brand span{color:#f4c542}.sub{color:#bfc7c3;font-size:13px;margin-top:4px}
+nav{display:flex;gap:8px;padding:12px;background:#fff;border-bottom:1px solid #eee;position:sticky;top:0}.nav{flex:1;border:0;background:#f1f4f2;border-radius:12px;padding:10px;font-weight:800}.nav.active{background:#159447;color:#fff}
+main{padding:16px}.card{border:1px solid #e5eae7;border-radius:18px;padding:16px;margin-bottom:14px}.hero{background:linear-gradient(135deg,#159447,#0d5c31);color:#fff;border:0}.row{display:flex;justify-content:space-between;align-items:center}.points{font-size:32px;font-weight:900}.pill{background:#ffffff22;padding:7px 10px;border-radius:99px;font-size:12px}
+button{cursor:pointer}.primary{width:100%;border:0;background:#f4c542;color:#111;font-weight:900;border-radius:13px;padding:14px;margin-top:12px}.answer{width:100%;border:1px solid #dfe6e1;background:#fff;text-align:left;border-radius:13px;padding:13px;margin:6px 0;font-weight:700}.correct{border-color:#159447;background:#eaf8ef}.wrong{border-color:#d9534f;background:#fff0f0}
+input{width:100%;padding:13px;border:1px solid #dfe6e1;border-radius:12px;margin:6px 0;box-sizing:border-box}.hidden{display:none}.muted{color:#68716d;font-size:13px}.rank{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf0ee}.badge{font-weight:900;color:#159447}
+</style></head>
+<body><div class="app">
+<header><div class="brand">🐝 <span>Bee</span> Win</div><div class="sub">Play smart • Earn points • Win rewards</div></header>
+<nav><button class="nav active" onclick="show('home',this)">Home</button><button class="nav" onclick="show('play',this)">Play</button><button class="nav" onclick="show('board',this)">Leaderboard</button><button class="nav" onclick="show('wallet',this)">Wallet</button></nav>
+<main>
+<section id="home">
+<div class="card hero"><div class="row"><div><div class="muted" style="color:#dce9e2">WELCOME</div><h2 id="welcome">Bee Win Player</h2></div><div class="pill" id="level">Level 1</div></div><p>Your points</p><div class="points" id="points">0</div><button class="primary" onclick="showId('play')">Play a round</button></div>
+<div class="card"><b>👤 Player account</b><p class="muted">Create a local demo profile below. Production accounts will use secure server authentication.</p><input id="name" placeholder="Your display name"><button class="primary" onclick="saveName()">Save profile</button></div>
+</section>
+<section id="play" class="hidden"><div class="card"><div class="muted">TRIVIA ROUND</div><h2 id="q"></h2><div id="answers"></div><p class="muted" id="feedback"></p></div></section>
+<section id="board" class="hidden"><div class="card"><h2>🏆 Leaderboard</h2><div class="rank"><b>1. Bee Master</b><span class="badge">2,400</span></div><div class="rank"><b>2. Naija Genius</b><span class="badge">2,100</span></div><div class="rank"><b>3. Queen Bee</b><span class="badge">1,850</span></div><div class="rank"><b id="youRank">4. You</b><span class="badge" id="boardPts">0</span></div><p class="muted">Demo leaderboard. Production rankings will be server-controlled.</p></div></section>
+<section id="wallet" class="hidden"><div class="card hero"><div class="muted" style="color:#dce9e2">BEE WALLET</div><div class="points" id="walletPts">0</div><p>Game points</p></div><div class="card"><h3>Withdraw rewards</h3><p class="muted">Cash withdrawal is disabled in this prototype. A production wallet will require verified accounts, secure backend checks, fraud controls and a compliant payout provider.</p><button class="primary" disabled style="opacity:.55">Withdraw — coming later</button></div></section>
+</main></div>
+<script>
+let state={name:"Bee Win Player",points:0};try{state=JSON.parse(localStorage.beeWin||'{"name":"Bee Win Player","points":0}')}catch(e){}
+const qs=[["What is the capital of Rivers State?",["Lagos","Port Harcourt","Uyo","Owerri"],1],["How many states are in Nigeria?",["24","30","36","40"],2],["What is Nigeria's currency?",["Naira","Cedi","Dollar","Franc"],0],["The Super Eagles are associated with which sport?",["Tennis","Football","Boxing","Rugby"],1]];
+let qi=0,answered=false;
+function save(){localStorage.beeWin=JSON.stringify(state);document.querySelectorAll("#points,#walletPts,#boardPts").forEach(x=>x.textContent=state.points);document.getElementById("welcome").textContent=state.name;document.getElementById("name").value=state.name}
+function saveName(){let n=document.getElementById("name").value.trim();if(n)state.name=n;save()}
+function show(id,b){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(b)b.classList.add("active");if(id==="play")renderQ();save()}
+function showId(id){show(id)}
+function renderQ(){answered=false;let x=qs[qi%qs.length];document.getElementById("q").textContent=x[0];document.getElementById("feedback").textContent="";let box=document.getElementById("answers");box.innerHTML="";x[1].forEach((a,i)=>{let b=document.createElement("button");b.className="answer";b.textContent=a;b.onclick=()=>pick(i,b,x[2]);box.appendChild(b)})}
+function pick(i,b,c){if(answered)return;answered=true;let all=[...document.querySelectorAll(".answer")];all.forEach(x=>x.disabled=true);if(i===c){state.points+=100;b.classList.add("correct");document.getElementById("feedback").textContent="+100 points! 🎉"}else{b.classList.add("wrong");all[c].classList.add("correct");document.getElementById("feedback").textContent="Not quite. The correct answer is highlighted."}save();setTimeout(()=>{qi++;renderQ()},800)}
+save();
+</script></body></html>
